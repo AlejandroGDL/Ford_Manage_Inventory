@@ -10,6 +10,7 @@ const itemSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
     required: true,
+    trim: true,
   },
   available: {
     type: Boolean,
