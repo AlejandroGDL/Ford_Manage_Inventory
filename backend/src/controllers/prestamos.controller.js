@@ -1,10 +1,18 @@
 import Prestamo from '../model/prestamos.model.js';
 
-export const getPrestamos = async (req, res) => {
+export const getPrestamos = async (_req, res) => {
   try {
     const prestamosList = await Prestamo.find()
-      .populate('item_id')
-      .populate('student_id');
+      .populate({ path: 'item_id' })
+      .populate({ path: 'student_id' });
+
+    // Ordenar por la cercanía de return_date (más próximos primero)
+    prestamosList.sort((a, b) => {
+      const dateA = new Date(a.return_date);
+      const dateB = new Date(b.return_date);
+      return dateA - dateB;
+    });
+
     res.status(200).json(prestamosList);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching loans', error });
@@ -61,16 +69,20 @@ export const deletePrestamo = async (req, res) => {
 };
 
 export const searchPrestamos = async (req, res) => {
-  const { query } = req;
+  const { name } = req.params;
   try {
-    const results = await Prestamo.find({
-      $or: [
-        { item_id: { $regex: query, $options: 'i' } },
-        { student_id: { $regex: query, $options: 'i' } },
-      ],
-    })
-      .populate('item_id')
-      .populate('student_id');
+    // Buscar préstamos y poblar item y estudiante
+    const prestamos = await Prestamo.find()
+      .populate({ path: 'item_id', select: 'name' })
+      .populate({ path: 'student_id', select: 'name' });
+
+    // Filtrar por nombre del item o nombre del estudiante
+    const results = prestamos.filter(
+      (p) =>
+        p.item_id?.name?.toLowerCase().includes(name?.toLowerCase() || '') ||
+        p.student_id?.name?.toLowerCase().includes(name?.toLowerCase() || '')
+    );
+
     res.status(200).json(results);
   } catch (error) {
     res.status(500).json({ message: 'Error searching loans', error });

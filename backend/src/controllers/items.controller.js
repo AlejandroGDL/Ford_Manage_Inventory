@@ -2,7 +2,7 @@ import items from '../model/items.model.js';
 
 export const getItems = async (req, res) => {
   try {
-    const itemsList = await items.find();
+    const itemsList = await items.find().populate('category_id');
     res.status(200).json(itemsList);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching items', error });
@@ -10,7 +10,12 @@ export const getItems = async (req, res) => {
 };
 
 export const searchItemsByName = async (req, res) => {
-  const { name } = req.query;
+  const { name } = req.params;
+  if (!name) {
+    return res
+      .status(400)
+      .json({ message: 'Name query parameter is required' });
+  }
   try {
     const itemsList = await items.find({
       name: { $regex: name, $options: 'i' },

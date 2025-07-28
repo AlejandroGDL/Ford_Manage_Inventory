@@ -10,7 +10,7 @@ import {
 const router = Router();
 
 router.get('/', getPrestamos);
-router.get('/search', searchPrestamos);
+router.get('/search/:name', searchPrestamos);
 router.post('/', createPrestamo); // Hace el prestamo (Item available = false)
 router.delete('/:id', deletePrestamo); // Elimina el prestamo  (Item available = true)
 

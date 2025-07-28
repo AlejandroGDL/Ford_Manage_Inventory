@@ -11,7 +11,7 @@ import {
 const router = Router();
 
 router.get('/', getItems);
-router.get('/search', searchItemsByName);
+router.get('/search/:name', searchItemsByName);
 router.post('/', createItem);
 router.put('/:id', updateItem);
 router.delete('/:id', deleteItem);

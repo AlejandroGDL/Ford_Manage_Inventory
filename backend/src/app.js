@@ -1,6 +1,7 @@
 import express from 'express';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import cors from 'cors';
 
 import authRoutes from './routes/auth-routes.js';
 import itemsRoutes from './routes/items-routes.js';
@@ -11,6 +12,9 @@ import prestamosRoutes from './routes/prestamos-routes.js';
 dotenv.config();
 
 const app = express();
+
+// Configuración de CORS - Permisivo para desarrollo
+app.use(cors());
 
 app.use(morgan('dev'));
 

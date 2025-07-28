@@ -8,7 +8,7 @@ const prestamosSchema = new mongoose.Schema({
   },
   student_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'Student',
     required: true,
   },
   loan_date: {

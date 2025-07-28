@@ -1,4 +1,5 @@
 import Category from '../model/category.model.js';
+import Item from '../model/items.model.js';
 
 export const getCategories = async (req, res) => {
   try {
@@ -11,7 +12,7 @@ export const getCategories = async (req, res) => {
 
 export const searchCategoriesByName = async (req, res) => {
   try {
-    const { name } = req.query;
+    const { name } = req.params;
     const categories = await Category.find({
       name: { $regex: name || '', $options: 'i' },
     });
@@ -44,14 +45,16 @@ export const deleteCategory = async (req, res) => {
   const { id } = req.params;
   try {
     // Verifica si hay items asociados a la categoría antes de eliminar
-    const itemsCount = await Item.countDocuments({ category: id });
+    const mongoose = await import('mongoose');
+    const categoryId = mongoose.Types.ObjectId.isValid(id)
+      ? new mongoose.Types.ObjectId(id)
+      : id;
+    const itemsCount = await Item.countDocuments({ category: categoryId });
     if (itemsCount > 0) {
-      return res
-        .status(400)
-        .json({
-          message:
-            'No se puede eliminar la categoría porque tiene items asociados.',
-        });
+      return res.status(400).json({
+        message:
+          'No se puede eliminar la categoría porque tiene items asociados.',
+      });
     }
 
     const category = await Category.findByIdAndDelete(id);

@@ -10,7 +10,7 @@ import {
 const router = Router();
 
 router.get('/', getCategories);
-router.get('/search', searchCategoriesByName);
+router.get('/search/:name', searchCategoriesByName);
 router.post('/', createCategory);
 router.delete('/:id', deleteCategory);
 

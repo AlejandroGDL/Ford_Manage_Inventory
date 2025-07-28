@@ -47,3 +47,20 @@ export const deleteStudent = async (req, res) => {
     res.status(500).json({ message: 'Error deleting student', error });
   }
 };
+
+export const searchStudentByName = async (req, res) => {
+  const { name } = req.params;
+  if (!name) {
+    return res
+      .status(400)
+      .json({ message: 'Name query parameter is required' });
+  }
+  try {
+    const students = await Student.find({
+      name: { $regex: name, $options: 'i' },
+    });
+    res.status(200).json(students);
+  } catch (error) {
+    res.status(500).json({ message: 'Error searching students', error });
+  }
+};
