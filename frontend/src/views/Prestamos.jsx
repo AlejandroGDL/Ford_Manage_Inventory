@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Input } from '../components/ui/input';
 import { Calendar } from '../components/ui/calendar';
 import { Button } from '../components/ui/button';
 import { useState } from 'react';
@@ -37,35 +36,80 @@ import {
   PopoverTrigger,
 } from '../components/ui/popover';
 
-const frameworks = [
-  {
-    value: 'next.js',
-    label: 'Next.js',
-  },
-  {
-    value: 'sveltekit',
-    label: 'SvelteKit',
-  },
-  {
-    value: 'nuxt.js',
-    label: 'Nuxt.js',
-  },
-  {
-    value: 'remix',
-    label: 'Remix',
-  },
-  {
-    value: 'astro',
-    label: 'Astro',
-  },
-];
+import axios from 'axios';
+import { toast } from 'sonner';
 
 function Prestamos() {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState('');
   const [date, setDate] = useState(new Date());
 
-  const [categoria, setCategoria] = useState('');
+  const [objetos, setObjetos] = useState([]);
+  const [selectedObjeto, setSelectedObjeto] = useState('');
+
+  const [categorias, setCategorias] = useState([]);
+  const [selectedCategoria, setSelectedCategoria] = useState('');
+
+  const [alumnos, setAlumnos] = React.useState([]);
+
+  const searchAlumno = async (searchTerm) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/students/search/${searchTerm}`
+      );
+      setAlumnos(response.data);
+      console.log('Alumnos encontrados:', response.data);
+    } catch (error) {
+      console.error('Error buscando alumno:', error);
+    }
+  };
+
+  React.useEffect(() => {
+    const fetchCategorias = async () => {
+      const response = await axios.get('http://localhost:3000/api/categories');
+      setCategorias(response.data);
+    };
+
+    fetchCategorias();
+  }, []);
+
+  const searchObjeto = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/items/category/${selectedCategoria}`
+      );
+      setObjetos(response.data);
+      console.log('Objetos encontrados:', response.data);
+    } catch (error) {
+      console.error('Error buscando objeto:', error);
+    }
+  };
+
+  const createPrestamo = async (item_id, student_id, return_date) => {
+    const formattedDate = return_date
+      ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+          2,
+          '0'
+        )}-${String(date.getDate()).padStart(2, '0')}`
+      : null;
+
+    try {
+      const response = await axios.post('http://localhost:3000/api/prestamos', {
+        item_id: item_id,
+        student_id: student_id,
+        return_date: formattedDate,
+      });
+      toast.success('Préstamo creado exitosamente');
+      setValue('');
+      setSelectedObjeto('');
+      setDate(new Date());
+      setSelectedCategoria('');
+      setObjetos([]);
+      setAlumnos([]);
+    } catch (error) {
+      console.error('Error creando préstamo:', error);
+    }
+  };
 
   return (
     <div className='h-full w-full'>
@@ -78,7 +122,7 @@ function Prestamos() {
           </CardDescription>
         </CardHeader>
 
-        <CardContent className='space-y-4 flex flex-col justify-center items-center'>
+        <CardContent className='space-y-2 flex flex-col justify-center items-center'>
           <div className='flex flex-row w-full justify-between items-center '>
             <Popover
               open={open}
@@ -92,8 +136,7 @@ function Prestamos() {
                   className='w-full justify-between'
                 >
                   {value
-                    ? frameworks.find((framework) => framework.value === value)
-                        ?.label
+                    ? alumnos.find((alumno) => alumno.name === value)?.name
                     : 'Busca un alumno'}
                   <ChevronsUpDown className='opacity-50' />
                 </Button>
@@ -103,28 +146,33 @@ function Prestamos() {
                   <CommandInput
                     placeholder='Escribe el nombre...'
                     className='h-9'
+                    onValueChange={searchAlumno}
                   />
                   <CommandList>
-                    <CommandEmpty>No framework found.</CommandEmpty>
+                    <CommandEmpty>Alumno no encontrado.</CommandEmpty>
                     <CommandGroup>
-                      {frameworks.map((framework) => (
+                      {alumnos.map((alumno) => (
                         <CommandItem
-                          key={framework.value}
-                          value={framework.value}
+                          key={alumno._id}
+                          value={alumno.name}
                           onSelect={(currentValue) => {
                             setValue(
-                              currentValue === value ? '' : currentValue
+                              currentValue === alumno._id ? '' : currentValue
                             );
                             setOpen(false);
                           }}
                         >
-                          {framework.label}
+                          <Check
+                            checked={alumno._id === value}
+                            onCheckedChange={(checked) => {
+                              setValue(checked ? alumno._id : '');
+                            }}
+                          />
+                          {alumno.name}
                           <Check
                             className={cn(
                               'ml-auto',
-                              value === framework.value
-                                ? 'opacity-100'
-                                : 'opacity-0'
+                              value === alumno._id ? 'opacity-100' : 'opacity-0'
                             )}
                           />
                         </CommandItem>
@@ -137,25 +185,46 @@ function Prestamos() {
           </div>
 
           <Select
-            value={categoria}
-            onValueChange={setCategoria}
+            value={selectedCategoria}
+            onValueChange={setSelectedCategoria}
+            onOpenChange={() => {
+              if (selectedCategoria) {
+                searchObjeto(selectedCategoria);
+              }
+            }}
           >
             <SelectTrigger className='w-full'>
               <SelectValue placeholder='Selecciona una categoría' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='light'>Laboratorio de computo</SelectItem>
-              <SelectItem value='dark'>Juegos de mesa</SelectItem>
+              {categorias.map((category) => (
+                <SelectItem
+                  key={category._id}
+                  value={category._id}
+                >
+                  {category.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
-          <Select disabled={!categoria}>
+          <Select
+            value={selectedObjeto}
+            onValueChange={setSelectedObjeto}
+            disabled={!selectedCategoria}
+          >
             <SelectTrigger className='w-full'>
               <SelectValue placeholder='Selecciona un objeto' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='light'>Computadora 1</SelectItem>
-              <SelectItem value='dark'>Computadora 2</SelectItem>
+              {objetos.map((objeto) => (
+                <SelectItem
+                  key={objeto._id}
+                  value={objeto._id}
+                >
+                  {objeto.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
@@ -172,7 +241,15 @@ function Prestamos() {
           <Separator />
         </CardContent>
         <CardFooter className='flex justify-between'>
-          <Button>Realizar préstamo</Button>
+          <Button
+            disabled={!value || !selectedObjeto || !date}
+            onClick={() => {
+              const alumno = alumnos.find((a) => a.name === value);
+              createPrestamo(selectedObjeto, alumno._id, date);
+            }}
+          >
+            Realizar préstamo
+          </Button>
           <Button className='ml-2'>Cancelar</Button>
         </CardFooter>
       </Card>

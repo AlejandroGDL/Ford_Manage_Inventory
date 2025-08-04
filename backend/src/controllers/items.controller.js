@@ -63,3 +63,18 @@ export const deleteItem = async (req, res) => {
     res.status(500).json({ message: 'Error deleting item', error });
   }
 };
+
+export const searchItemsByCategory = async (req, res) => {
+  const { categoryId } = req.params;
+  if (!categoryId) {
+    return res
+      .status(400)
+      .json({ message: 'Category ID query parameter is required' });
+  }
+  try {
+    const itemsList = await items.find({ category_id: categoryId });
+    res.status(200).json(itemsList);
+  } catch (error) {
+    res.status(500).json({ message: 'Error searching items', error });
+  }
+};

@@ -21,6 +21,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 function Objetos() {
   const [objetos, setObjetos] = useState([]);
@@ -52,8 +53,13 @@ function Objetos() {
         available: true,
       });
       setObjetos((prevObjetos) => [...prevObjetos, response.data]);
+      toast.success('Objeto creado exitosamente');
+
+      setSelectedObjeto('');
+      setSelectedCategoria('');
     } catch (error) {
       console.error('Error al crear objeto:', error);
+      toast.error('Error al crear objeto: ' + error.message);
     }
   };
 
@@ -64,8 +70,10 @@ function Objetos() {
       setObjetos((prevObjetos) =>
         prevObjetos.filter((objeto) => objeto._id !== id)
       );
+      toast.success('Objeto eliminado exitosamente');
     } catch (error) {
       console.error('Error al eliminar objeto:', error);
+      toast.error('Error al eliminar objeto: ' + error.message);
     }
   };
 
@@ -113,6 +121,7 @@ function Objetos() {
               disabled={!selectedCategoria}
               required
               id='name'
+              value={selectedObjeto}
               onChange={(e) => setSelectedObjeto(e.target.value)}
             />
           </CardContent>

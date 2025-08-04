@@ -13,6 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 function Categorias() {
   const [categorias, setCategorias] = useState([]);
@@ -22,7 +23,6 @@ function Categorias() {
     const fetchCategorias = async () => {
       const response = await axios.get('http://localhost:3000/api/categories');
       setCategorias(response.data);
-      console.log(response.data);
     };
 
     fetchCategorias();
@@ -36,8 +36,11 @@ function Categorias() {
         { name }
       );
       setCategorias((prevCategorias) => [...prevCategorias, response.data]);
+      setNewCategoria('');
+      toast.success('Categoría creada exitosamente');
     } catch (error) {
       console.error('Error al crear categoría:', error);
+      toast.error('Error al crear categoría: ' + error.message);
     }
   };
 
@@ -48,8 +51,10 @@ function Categorias() {
       setCategorias((prevCategorias) =>
         prevCategorias.filter((categoria) => categoria._id !== id)
       );
+      toast.success('Categoría eliminada exitosamente');
     } catch (error) {
       console.error('Error al eliminar categoría:', error);
+      toast.error('Error al eliminar categoría: ' + error.message);
     }
   };
 

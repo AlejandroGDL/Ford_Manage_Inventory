@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../components/ui/card';
+
 import { Button } from '../components/ui/button';
 import { Separator } from '../components/ui/separator';
 import { Input } from '../components/ui/input';
@@ -46,11 +47,17 @@ function Alumnos() {
   const [alumnos, setAlumnos] = useState([]);
   const [open, setOpen] = React.useState(false);
   var [value, setValue] = React.useState('');
+  const [selectedAlumno, setSelectedAlumno] = useState(null);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [lounge, setLounge] = useState('');
   const [year, setYear] = useState('');
+
+  const [Editname, setEditName] = useState('');
+  const [Editemail, setEditEmail] = useState('');
+  const [Editlounge, setEditLounge] = useState('');
+  const [Edityear, setEditYear] = useState('');
 
   const createAlumno = async (newAlumno) => {
     try {
@@ -82,8 +89,33 @@ function Alumnos() {
     }
   };
 
-  const TEST = (value) => {
-    console.log('TEST', value);
+  const deleteAlumno = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/students/${id}`);
+      setAlumnos(alumnos.filter((alumno) => alumno._id !== id));
+      alert('Alumno eliminado exitosamente');
+      setSelectedAlumno(null);
+    } catch (error) {
+      console.error('Error eliminando alumno:', error);
+      alert('Error al eliminar el alumno');
+    }
+  };
+
+  const updateAlumno = async (id, updatedAlumno) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/api/students/${id}`,
+        updatedAlumno
+      );
+      setAlumnos(
+        alumnos.map((alumno) => (alumno._id === id ? response.data : alumno))
+      );
+      alert('Alumno actualizado exitosamente');
+      setSelectedAlumno(null);
+    } catch (error) {
+      console.error('Error actualizando alumno:', error);
+      alert('Error al actualizar el alumno');
+    }
   };
 
   return (
@@ -205,19 +237,22 @@ function Alumnos() {
                           value={alumno.name}
                           onSelect={(currentValue) => {
                             setValue(
-                              currentValue === value ? '' : currentValue
+                              currentValue === alumno._id ? '' : currentValue
                             );
                             setOpen(false);
                           }}
                         >
-                          {alumno.label || alumno.name}
+                          <Check
+                            checked={alumno._id === value}
+                            onCheckedChange={(checked) => {
+                              setValue(checked ? alumno._id : '');
+                            }}
+                          />
+                          {alumno.name}
                           <Check
                             className={cn(
                               'ml-auto',
-                              value ===
-                                (alumno.value || alumno._id || alumno.id)
-                                ? 'opacity-100'
-                                : 'opacity-0'
+                              value === alumno._id ? 'opacity-100' : 'opacity-0'
                             )}
                           />
                         </CommandItem>
@@ -228,59 +263,106 @@ function Alumnos() {
               </PopoverContent>
             </Popover>
 
-            <Dialog>
-              <DialogTrigger className='w-full'>
-                <Button className='w-full'>Editar o eliminar</Button>
+            <Dialog
+              open={!!selectedAlumno}
+              onOpenChange={(open) => {
+                if (!open) setSelectedAlumno(null);
+              }}
+            >
+              <DialogTrigger
+                disabled={!value}
+                className='w-full'
+              >
+                <Button
+                  variant='default'
+                  className='w-full'
+                  disabled={!value}
+                  onClick={() => {
+                    const alumno = alumnos.find((a) => a.name === value);
+                    setSelectedAlumno(alumno);
+                    if (alumno) {
+                      setEditName(alumno.name);
+                      setEditEmail(alumno.email);
+                      setEditLounge(alumno.lounge);
+                      setEditYear(alumno.year);
+                    }
+                  }}
+                >
+                  Editar o eliminar alumno
+                </Button>
               </DialogTrigger>
 
               <DialogContent className={'flex flex-col items-center'}>
                 <DialogHeader className={'flex flex-col items-center'}>
-                  <DialogTitle>[Nombre del alumno]</DialogTitle>
+                  <DialogTitle>{Editname}</DialogTitle>
                   <DialogDescription>
                     Edita los detalles del alumno o elimina su registro.
                   </DialogDescription>
                 </DialogHeader>
 
                 <div className='grid w-full max-w-sm items-center gap-3'>
-                  <Label htmlFor='email'>Nombre del alumno</Label>
+                  <Label htmlFor='Editname'>Nombre del alumno</Label>
                   <Input
                     type='text'
-                    id='email'
+                    id='Editname'
+                    name='Editname'
                     placeholder='Nombre'
+                    onChange={(e) => setEditName(e.target.value)}
+                    value={Editname}
                   />
                 </div>
 
                 <div className='grid w-full max-w-sm items-center gap-3'>
-                  <Label htmlFor='apellidos'>Apellidos del alumno</Label>
+                  <Label htmlFor='Editemail'>Correo del alumno</Label>
                   <Input
                     type='text'
-                    id='apellidos'
-                    placeholder='Apellidos'
+                    id='Editemail'
+                    name='Editemail'
+                    placeholder='Correo'
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    value={Editemail}
                   />
                 </div>
 
                 <div className='grid w-full max-w-sm items-center gap-3'>
-                  <Label htmlFor='salon'>Salón del alumno</Label>
+                  <Label htmlFor='Editlounge'>Salón del alumno</Label>
                   <Input
                     type='text'
-                    id='salon'
+                    id='Editlounge'
+                    name='Editlounge'
                     placeholder='Salón'
+                    onChange={(e) => setEditLounge(e.target.value)}
+                    value={Editlounge}
                   />
                 </div>
 
                 <div className='grid w-full max-w-sm items-center gap-3'>
-                  <Label htmlFor='año'>Año en curso del alumno</Label>
+                  <Label htmlFor='Edityear'>Año en curso del alumno</Label>
                   <Input
-                    type='text'
-                    id='año'
+                    type='number'
+                    id='Edityear'
+                    name='Edityear'
                     placeholder='Año'
+                    onChange={(e) => setEditYear(e.target.value)}
+                    value={Edityear}
                   />
                 </div>
 
                 <DialogFooter>
                   <Button
                     variant='secondary'
-                    disabled={!name || !email || !lounge || !year}
+                    disabled={
+                      !Editname || !Editemail || !Editlounge || !Edityear
+                    }
+                    onClick={() => {
+                      const updatedAlumno = {
+                        name: Editname,
+                        email: Editemail,
+                        lounge: Editlounge,
+                        year: Edityear,
+                      };
+                      updateAlumno(selectedAlumno._id, updatedAlumno);
+                    }}
                   >
                     Guardar cambios
                   </Button>
@@ -294,6 +376,9 @@ function Alumnos() {
                       <Button
                         variant='destructive'
                         className='w-full'
+                        disabled={
+                          !Editname || !Editemail || !Editlounge || !Edityear
+                        }
                       >
                         Eliminar alumno
                       </Button>
@@ -301,9 +386,8 @@ function Alumnos() {
 
                     <DialogContent className={'flex flex-col items-center'}>
                       <DialogHeader className={'flex flex-col items-center'}>
-                        <DialogTitle>
-                          Estas seguro que deseas eliminar a [Nombre del
-                          alumno]?
+                        <DialogTitle className='text-center'>
+                          ¿Estas seguro que deseas eliminar a {Editname}?
                         </DialogTitle>
                         <DialogDescription>
                           Esta acción no se puede deshacer.
@@ -323,7 +407,12 @@ function Alumnos() {
                           orientation='vertical'
                           className='mx-2'
                         />
-                        <Button variant='destructive'>Eliminar</Button>
+                        <Button
+                          variant='destructive'
+                          onClick={() => deleteAlumno(selectedAlumno._id)}
+                        >
+                          Eliminar
+                        </Button>
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
