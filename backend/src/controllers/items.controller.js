@@ -1,4 +1,6 @@
 import items from '../model/items.model.js';
+import loans from '../model/prestamos.model.js';
+import mongoose from 'mongoose';
 
 export const getItems = async (req, res) => {
   try {
@@ -54,6 +56,15 @@ export const updateItem = async (req, res) => {
 export const deleteItem = async (req, res) => {
   const { id } = req.params;
   try {
+    const item = await items.findById(id);
+    if (!item) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+    if (!item.available) {
+      return res
+        .status(400)
+        .json({ message: 'El item está en préstamo y no se puede eliminar' });
+    }
     const deletedItem = await items.findByIdAndDelete(id);
     if (!deletedItem) {
       return res.status(404).json({ message: 'Item not found' });

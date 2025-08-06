@@ -1,4 +1,5 @@
 import Student from '../model/student.model.js';
+import Loan from '../model/prestamos.model.js';
 
 export const getStudents = async (req, res) => {
   try {
@@ -38,6 +39,15 @@ export const updateStudent = async (req, res) => {
 export const deleteStudent = async (req, res) => {
   const { id } = req.params;
   try {
+    const loan = await Loan.findOne({ student_id: id });
+    if (loan) {
+      return res
+        .status(400)
+        .json({
+          message:
+            'No se puede eliminar el estudiante porque tiene préstamos activos.',
+        });
+    }
     const deletedStudent = await Student.findByIdAndDelete(id);
     if (!deletedStudent) {
       return res.status(404).json({ message: 'Student not found' });

@@ -73,7 +73,10 @@ function Objetos() {
       toast.success('Objeto eliminado exitosamente');
     } catch (error) {
       console.error('Error al eliminar objeto:', error);
-      toast.error('Error al eliminar objeto: ' + error.message);
+      toast.error(
+        'Error al eliminar objeto: ' + error.response?.data?.message ||
+          error.message
+      );
     }
   };
 

@@ -1,5 +1,6 @@
 import Category from '../model/category.model.js';
 import Item from '../model/items.model.js';
+const mongoose = await import('mongoose');
 
 export const getCategories = async (req, res) => {
   try {
@@ -44,13 +45,8 @@ export const createCategory = async (req, res) => {
 export const deleteCategory = async (req, res) => {
   const { id } = req.params;
   try {
-    // Verifica si hay items asociados a la categoría antes de eliminar
-    const mongoose = await import('mongoose');
-    const categoryId = mongoose.Types.ObjectId.isValid(id)
-      ? new mongoose.Types.ObjectId(id)
-      : id;
-    const itemsCount = await Item.countDocuments({ category: categoryId });
-    if (itemsCount > 0) {
+    const itemsWithCategory = await Item.findOne({ category_id: id });
+    if (itemsWithCategory) {
       return res.status(400).json({
         message:
           'No se puede eliminar la categoría porque tiene items asociados.',

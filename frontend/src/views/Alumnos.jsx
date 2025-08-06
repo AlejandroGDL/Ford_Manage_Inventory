@@ -43,6 +43,8 @@ import {
   PopoverTrigger,
 } from '../components/ui/popover';
 
+import { toast } from 'sonner';
+
 function Alumnos() {
   const [alumnos, setAlumnos] = useState([]);
   const [open, setOpen] = React.useState(false);
@@ -66,14 +68,14 @@ function Alumnos() {
         newAlumno
       );
       setAlumnos([...alumnos, response.data]);
-      alert('Alumno creado exitosamente'); //CAMBIAR
+      toast.success('Alumno creado exitosamente');
       setName('');
       setEmail('');
       setLounge('');
       setYear('');
     } catch (error) {
       console.error('Error creando alumno:', error);
-      alert('Error al crear el alumno');
+      toast.error('Error al crear el alumno');
     }
   };
 
@@ -83,7 +85,6 @@ function Alumnos() {
         `http://localhost:3000/api/students/search/${searchTerm}`
       );
       setAlumnos(response.data);
-      console.log('Alumnos encontrados:', response.data);
     } catch (error) {
       console.error('Error buscando alumno:', error);
     }
@@ -93,11 +94,13 @@ function Alumnos() {
     try {
       await axios.delete(`http://localhost:3000/api/students/${id}`);
       setAlumnos(alumnos.filter((alumno) => alumno._id !== id));
-      alert('Alumno eliminado exitosamente');
+      toast.success('Alumno eliminado exitosamente');
       setSelectedAlumno(null);
     } catch (error) {
-      console.error('Error eliminando alumno:', error);
-      alert('Error al eliminar el alumno');
+      toast.error(
+        'Error al eliminar el alumno: ' + error.response?.data?.message ||
+          error.message
+      );
     }
   };
 
@@ -110,11 +113,11 @@ function Alumnos() {
       setAlumnos(
         alumnos.map((alumno) => (alumno._id === id ? response.data : alumno))
       );
-      alert('Alumno actualizado exitosamente');
+      toast.success('Alumno actualizado exitosamente');
       setSelectedAlumno(null);
     } catch (error) {
       console.error('Error actualizando alumno:', error);
-      alert('Error al actualizar el alumno');
+      toast.error('Error al actualizar el alumno');
     }
   };
 
@@ -147,6 +150,7 @@ function Alumnos() {
                 type='text'
                 id='name'
                 name='name'
+                value={name}
                 placeholder='Nombre'
                 onChange={(e) => setName(e.target.value)}
               />
@@ -158,6 +162,7 @@ function Alumnos() {
                 type='text'
                 id='email'
                 name='email'
+                value={email}
                 placeholder='Correo electrónico'
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -169,6 +174,7 @@ function Alumnos() {
                 type='text'
                 id='lounge'
                 name='lounge'
+                value={lounge}
                 placeholder='Salón'
                 onChange={(e) => setLounge(e.target.value)}
               />
@@ -180,6 +186,7 @@ function Alumnos() {
                 type='text'
                 id='year'
                 name='year'
+                value={year}
                 placeholder='Año'
                 onChange={(e) => setYear(e.target.value)}
               />

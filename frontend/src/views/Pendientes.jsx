@@ -14,6 +14,8 @@ import { useEffect, useState } from 'react';
 
 import axios from 'axios';
 
+import { toast } from 'sonner';
+
 function Pendientes() {
   const [prestamos, setPrestamos] = useState([]);
 
@@ -48,8 +50,10 @@ function Pendientes() {
       setPrestamos((prevPrestamos) =>
         prevPrestamos.filter((prestamo) => prestamo._id !== id)
       );
+      toast.success('Préstamo retornado correctamente');
     } catch (error) {
       console.error('Error al retornar préstamo:', error);
+      toast.error('Error al retornar préstamo');
     }
   };
 

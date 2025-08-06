@@ -54,7 +54,10 @@ function Categorias() {
       toast.success('Categoría eliminada exitosamente');
     } catch (error) {
       console.error('Error al eliminar categoría:', error);
-      toast.error('Error al eliminar categoría: ' + error.message);
+      toast.error(
+        'Error al eliminar categoría: ' + error.response?.data?.message ||
+          error.message
+      );
     }
   };
 
