@@ -1,0 +1,35 @@
+
+Tecnologias utilizadas:
+- React con Vite
+- Tailwind
+- Shadcn
+- react-router-dom
+
+
+Instalación pasos
+
+
+Pasos desarrollo:
+1. Se empezó verificado la correcta instalación del proyecto.
+2. Se crearon las rutas principales en las cuales se moverán los usuarios.
+3. Se desarrollo el código en caso de existir un error dentro de la pagina hacérselo saber al usuario.
+4. Instalar react-router-dom para que el enrutado de paginas funcione bien.
+5. Se instalo una sidebar, la cual es necesaria para que los usuarios se muevan dentro de las distintas paginas.
+6.
+
+
+Datos:
+
+ GMAIL:
+  escuelaford84@gmail.com
+  escuela_ford84#
+
+ MongoDB
+  escuelaford84
+  bRmKTssQWi7PYB1b
+	
+  mongodb+srv://escuelaford84:bRmKTssQWi7PYB1b@forddb.lyp9eme.mongodb.net/?retryWrites=true&w=majority&appName=FordDB
+
+
+
+
